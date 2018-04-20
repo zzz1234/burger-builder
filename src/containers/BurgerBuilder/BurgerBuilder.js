@@ -4,7 +4,8 @@ import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
-
+import axios from '../../axios-order';
+import Spinner from '../../components/UI/Spinner/Spinner';
 
   const priceIngredients = {
     cheese : 0.7,
@@ -17,14 +18,19 @@ import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 class BurgerBuilder extends Component {
 
   state = {
-    ingredients : {
-      cheese : 0,
-      salad : 0,
-      bacon : 0,
-      meat : 0
-    },
+    ingredients : null,
     price : 20,
-    modal : false
+    modal : false,
+    loading : false
+  }
+
+  componentDidMount () {
+    axios.get('https://burger-builder-20255.firebaseio.com/ingredients.json')
+         .then( response => {
+           this.setState({
+             ingredients : response.data
+           })
+         })
   }
 
   addIngredientHandler = (type) => {
@@ -77,15 +83,69 @@ class BurgerBuilder extends Component {
     })
   }
 
+  purchaseContinueHandler = () => {
+    this.setState({
+      loading : true
+    })
+    const order = {
+      ingredients : this.state.ingredients,
+      price : this.state.price.toFixed(2),
+      customer : {
+        name : 'Ujjwal',
+        address : {
+          street : '15 Yemen Road',
+          country : 'Yemen',
+          Zipcode : '163134'
+        },
+        email : 'ujjwalsharma04@gmail.com'
+      },
+      deliveryMethod : 'Fastest'
+    }
+    axios.post('/orders.json',order)
+    .then(this.setState({
+      loading : false
+    }))
+    .catch(this.setState({
+      loading : false
+    }));
+
+    this.setState({
+      modal : false
+    })
+  }
+
   render(){
+    let summary = <Spinner />;
+    if(this.state.ingredients)
+    {
+      summary = <OrderSummary ingredients = {this.state.ingredients} clicked = {this.removeModalHandler} price = {this.state.price}
+                  ordercontinue = {this.purchaseContinueHandler}/>
+    }
+    if(this.state.loading){
+      summary = <Spinner />;
+    }
+
+    let burger = <Spinner />;
+
+    if(this.state.ingredients){
+      burger = (
+        <Aux>
+        <Burger ingredients = {this.state.ingredients} total = {this.state.price}/>
+      <div>
+      <BuildControls ingredientAdded = {this.addIngredientHandler}
+                     ingredientRemoved = {this.removeIngredientHandler}
+                     summary={this.showModalHandler}/>
+      </div>
+      </Aux>
+    );
+    }
 
     return(
       <Aux>
       <Modal status = {this.state.modal} click = {this.removeModalHandler}>
-        <OrderSummary ingredients = {this.state.ingredients} clicked = {this.removeModalHandler} price = {this.state.price}/>
+      {summary}
       </Modal>
-        <Burger ingredients = {this.state.ingredients} total = {this.state.price}/>
-        <div><BuildControls ingredientAdded = {this.addIngredientHandler} ingredientRemoved = {this.removeIngredientHandler} summary={this.showModalHandler}/></div>
+        {burger}
       </Aux>
     );
   }

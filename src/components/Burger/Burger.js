@@ -16,12 +16,13 @@ const burger = (props) => {
     transformedIngredients = <div>Please Add Some Ingredients</div>;
   }
   console.log(transformedIngredients);
+  
   return(
       <div className = {classes.Burger}>
     <BurgerIngredient type = "bread-top" />
     {transformedIngredients}
     <BurgerIngredient type = "bread-bottom" />
-    <div className = {classes.price}>Total : {props.total.toFixed(2)}</div>
+    <div className = {classes.price}>Total : {props.total ? props.total.toFixed(2) : null}</div>
   </div>
 );
 }

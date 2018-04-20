@@ -1,7 +1,7 @@
 import React from 'react';
 import Aux from '../../../hoc/Aux';
 import Button from '../../UI/Button/Button';
-
+import {Link} from 'react-router-dom';
 const orderSummary = (props) => {
   const ingredientSummary = Object.keys(props.ingredients)
                             .map(igKey => {
@@ -19,7 +19,9 @@ const orderSummary = (props) => {
       </ul>
       <p><strong>Price : {props.price.toFixed(2)}</strong></p>
       <p>Do you wish to Continue</p>
-      <Button type = "Success" clicked = {props.clicked}> Continue</Button>
+      <Link to = "/checkout">
+      <Button type = "Success"> Continue</Button>
+      </Link>
       <Button type = "Danger" clicked = {props.clicked}> Cancel</Button>
     </Aux>
   );
